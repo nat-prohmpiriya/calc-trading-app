@@ -32,8 +32,9 @@
 			<h1 class="text-4xl font-bold text-gray-800 mb-2">{$_('app.name')}</h1>
 			<p class="text-gray-600 mb-8">{$_('app.description')}</p>
 
-			<!-- Calculator Cards -->
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+			<!-- Trading Calculators -->
+			<h2 class="text-2xl font-bold text-gray-700 mb-4">Trading</h2>
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
 				<a href="/calculators/profit-loss" class="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition">
 					<h2 class="text-xl font-semibold mb-2">{$_('calculators.profitLoss.title')}</h2>
 					<p class="text-gray-500 text-sm">{$_('calculators.profitLoss.description')}</p>
@@ -63,8 +64,42 @@
 					<h2 class="text-xl font-semibold mb-2">{$_('calculators.compound.title')}</h2>
 					<p class="text-gray-500 text-sm">{$_('calculators.compound.description')}</p>
 				</a>
+			</div>
 
-				<a href="/calculators/tax-th" class="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition border-2 border-blue-200">
+			<!-- Personal Finance Calculators -->
+			<h2 class="text-2xl font-bold text-gray-700 mb-4">Personal Finance</h2>
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+				<a href="/calculators/loan" class="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition">
+					<h2 class="text-xl font-semibold mb-2">{$_('loan.title')}</h2>
+					<p class="text-gray-500 text-sm">{$_('loan.description')}</p>
+				</a>
+
+				<a href="/calculators/retirement" class="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition">
+					<h2 class="text-xl font-semibold mb-2">{$_('retirement.title')}</h2>
+					<p class="text-gray-500 text-sm">{$_('retirement.description')}</p>
+				</a>
+
+				<a href="/calculators/emergency-fund" class="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition">
+					<h2 class="text-xl font-semibold mb-2">{$_('emergency.title')}</h2>
+					<p class="text-gray-500 text-sm">{$_('emergency.description')}</p>
+				</a>
+
+				<a href="/calculators/savings-goal" class="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition">
+					<h2 class="text-xl font-semibold mb-2">{$_('savingsGoal.title')}</h2>
+					<p class="text-gray-500 text-sm">{$_('savingsGoal.description')}</p>
+				</a>
+
+				<a href="/calculators/salary-convert" class="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition">
+					<h2 class="text-xl font-semibold mb-2">{$_('salary.title')}</h2>
+					<p class="text-gray-500 text-sm">{$_('salary.description')}</p>
+				</a>
+
+				<a href="/calculators/net-worth" class="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition">
+					<h2 class="text-xl font-semibold mb-2">{$_('networth.title')}</h2>
+					<p class="text-gray-500 text-sm">{$_('networth.description')}</p>
+				</a>
+
+				<a href="/calculators/tax-th" class="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition border-2 border-green-200">
 					<h2 class="text-xl font-semibold mb-2">{$_('taxTh.title')}</h2>
 					<p class="text-gray-500 text-sm">{$_('taxTh.description')}</p>
 				</a>
