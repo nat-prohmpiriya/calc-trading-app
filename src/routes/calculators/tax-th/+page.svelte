@@ -29,9 +29,25 @@
 	const DONATION_MAX_PERCENT = 10;
 
 	// Income
-	let annualIncome = $state<number | null>(null);
+	let incomeType = $state<'monthly' | 'annual'>('monthly');
+	let monthlyIncome = $state<number | null>(null);
+	let annualIncomeInput = $state<number | null>(null);
+	let bonusIncome = $state<number | null>(null);
+	let otherIncome = $state<number | null>(null);
 	let expenseDeductionType = $state<'percent' | 'actual'>('percent');
 	let actualExpenses = $state<number | null>(null);
+
+	// Computed annual income
+	let annualIncome = $derived.by(() => {
+		if (incomeType === 'monthly') {
+			const monthly = (monthlyIncome ?? 0) * 12;
+			const bonus = bonusIncome ?? 0;
+			const other = otherIncome ?? 0;
+			return monthly + bonus + other;
+		} else {
+			return annualIncomeInput ?? 0;
+		}
+	});
 
 	// Personal deductions
 	let hasSpouse = $state(false);
@@ -173,7 +189,11 @@
 	});
 
 	function reset() {
-		annualIncome = null;
+		incomeType = 'monthly';
+		monthlyIncome = null;
+		annualIncomeInput = null;
+		bonusIncome = null;
+		otherIncome = null;
 		expenseDeductionType = 'percent';
 		actualExpenses = null;
 		hasSpouse = false;
@@ -231,24 +251,93 @@
 				<div class="bg-white rounded-lg shadow p-6">
 					<h2 class="text-lg font-semibold mb-4">{$_('taxTh.income')}</h2>
 
+					<!-- Income Type Toggle -->
 					<div class="mb-4">
-						<label for="income" class="block text-sm font-medium text-gray-700 mb-1">
-							{$_('taxTh.annualIncome')}
-						</label>
-						<input
-							id="income"
-							type="number"
-							bind:value={annualIncome}
-							placeholder="0"
-							step="1000"
-							class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-						/>
+						<div class="flex gap-2 mb-4">
+							<button
+								class="flex-1 py-2 rounded {incomeType === 'monthly' ? 'bg-blue-500 text-white' : 'bg-gray-200'}"
+								onclick={() => (incomeType = 'monthly')}
+							>
+								{$_('taxTh.monthly')}
+							</button>
+							<button
+								class="flex-1 py-2 rounded {incomeType === 'annual' ? 'bg-blue-500 text-white' : 'bg-gray-200'}"
+								onclick={() => (incomeType = 'annual')}
+							>
+								{$_('taxTh.annual')}
+							</button>
+						</div>
+
+						{#if incomeType === 'monthly'}
+							<div class="space-y-3">
+								<div>
+									<label for="monthlyIncome" class="block text-sm font-medium text-gray-700 mb-1">
+										{$_('taxTh.monthlySalary')}
+									</label>
+									<input
+										id="monthlyIncome"
+										type="number"
+										bind:value={monthlyIncome}
+										placeholder="0"
+										step="1000"
+										class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+									/>
+								</div>
+								<div>
+									<label for="bonusIncome" class="block text-sm font-medium text-gray-700 mb-1">
+										{$_('taxTh.bonus')}
+									</label>
+									<input
+										id="bonusIncome"
+										type="number"
+										bind:value={bonusIncome}
+										placeholder="0"
+										step="1000"
+										class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+									/>
+								</div>
+								<div>
+									<label for="otherIncome" class="block text-sm font-medium text-gray-700 mb-1">
+										{$_('taxTh.otherIncome')}
+									</label>
+									<input
+										id="otherIncome"
+										type="number"
+										bind:value={otherIncome}
+										placeholder="0"
+										step="1000"
+										class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+									/>
+								</div>
+								<!-- Show calculated annual income -->
+								{#if annualIncome > 0}
+									<div class="p-3 bg-blue-50 rounded-lg text-center">
+										<span class="text-sm text-gray-600">{$_('taxTh.calculatedAnnual')}:</span>
+										<span class="font-semibold text-blue-600 ml-2">฿{annualIncome.toLocaleString()}</span>
+									</div>
+								{/if}
+							</div>
+						{:else}
+							<div>
+								<label for="annualIncome" class="block text-sm font-medium text-gray-700 mb-1">
+									{$_('taxTh.annualIncome')}
+								</label>
+								<input
+									id="annualIncome"
+									type="number"
+									bind:value={annualIncomeInput}
+									placeholder="0"
+									step="1000"
+									class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+								/>
+							</div>
+						{/if}
 					</div>
 
 					<div class="mb-4">
-						<label class="block text-sm font-medium text-gray-700 mb-2">
+						<span class="block text-sm font-medium text-gray-700 mb-2">
 							{$_('taxTh.expenseDeduction')}
-						</label>
+						</span>
 						<div class="flex gap-4">
 							<label class="flex items-center">
 								<input
