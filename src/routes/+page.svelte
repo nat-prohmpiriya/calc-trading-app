@@ -63,6 +63,11 @@
 					<h2 class="text-xl font-semibold mb-2">{$_('calculators.compound.title')}</h2>
 					<p class="text-gray-500 text-sm">{$_('calculators.compound.description')}</p>
 				</a>
+
+				<a href="/calculators/tax-th" class="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition border-2 border-blue-200">
+					<h2 class="text-xl font-semibold mb-2">{$_('taxTh.title')}</h2>
+					<p class="text-gray-500 text-sm">{$_('taxTh.description')}</p>
+				</a>
 			</div>
 		</div>
 	</div>

@@ -50,5 +50,93 @@
     "loss": "ขาดทุน",
     "risk": "ความเสี่ยง",
     "reward": "ผลตอบแทน"
+  },
+  "profitLoss": {
+    "positionType": "ประเภท Position",
+    "long": "Long (ซื้อ)",
+    "short": "Short (ขาย)",
+    "profitLoss": "กำไร/ขาดทุน",
+    "percent": "เปอร์เซ็นต์"
+  },
+  "fee": {
+    "tradeAmount": "จำนวนเงินเทรด",
+    "feePercent": "อัตราค่าธรรมเนียม",
+    "leverage": "Leverage",
+    "positionSize": "ขนาด Position",
+    "entryFee": "ค่าธรรมเนียมเปิด",
+    "exitFee": "ค่าธรรมเนียมปิด",
+    "totalFee": "ค่าธรรมเนียมรวม (ไป-กลับ)",
+    "feePercentOfCapital": "ค่าธรรมเนียม % ต่อทุน"
+  },
+  "riskReward": {
+    "stopLoss": "จุดตัดขาดทุน (SL)",
+    "takeProfit": "จุดทำกำไร (TP)",
+    "ratio": "อัตราส่วน Risk:Reward",
+    "breakeven": "Win Rate ขั้นต่ำที่ไม่ขาดทุน"
+  },
+  "positionSize": {
+    "accountSize": "ขนาดพอร์ต",
+    "riskPercent": "ความเสี่ยงต่อเทรด",
+    "riskAmount": "จำนวนเงินที่เสี่ยง",
+    "slDistance": "ระยะห่าง Stop Loss",
+    "recommendedSize": "ขนาด Position ที่แนะนำ",
+    "units": "หน่วย",
+    "positionValue": "มูลค่า Position"
+  },
+  "dca": {
+    "buyPrice": "ราคาซื้อ",
+    "investAmount": "จำนวนเงินลงทุน",
+    "addEntry": "เพิ่มรายการ",
+    "averagePrice": "ราคาเฉลี่ย",
+    "totalInvested": "เงินลงทุนทั้งหมด",
+    "totalQuantity": "จำนวนเหรียญทั้งหมด",
+    "entries": "จำนวนครั้งที่ซื้อ"
+  },
+  "compound": {
+    "principal": "เงินต้น",
+    "ratePerPeriod": "อัตราต่องวด",
+    "periods": "จำนวนงวด",
+    "finalAmount": "เงินสุดท้าย",
+    "totalProfit": "กำไรรวม",
+    "totalReturn": "ผลตอบแทนรวม",
+    "breakdown": "รายละเอียดแต่ละงวด",
+    "period": "งวดที่",
+    "amount": "จำนวนเงิน"
+  },
+  "taxTh": {
+    "title": "คำนวณภาษีเงินได้บุคคลธรรมดา",
+    "description": "คำนวณภาษี ภ.ง.ด. 90/91 พร้อมค่าลดหย่อน",
+    "income": "รายได้",
+    "annualIncome": "รายได้ต่อปี (บาท)",
+    "expenseDeduction": "หักค่าใช้จ่าย",
+    "percent40": "40% (สูงสุด 100,000)",
+    "actualExpenses": "ค่าใช้จ่ายจริง",
+    "personalDeductions": "ค่าลดหย่อนส่วนตัว",
+    "hasSpouse": "สมรส",
+    "spouseHasIncome": "คู่สมรสมีรายได้",
+    "numChildren": "จำนวนบุตร",
+    "numChildrenAfter2561": "เกิดหลังปี 2561",
+    "numParents": "จำนวนบิดามารดา",
+    "max4": "สูงสุด 4 คน",
+    "insuranceFunds": "ประกัน & กองทุน",
+    "socialSecurity": "ประกันสังคม",
+    "lifeInsurance": "ประกันชีวิต",
+    "healthInsurance": "ประกันสุขภาพ",
+    "parentHealthInsurance": "ประกันสุขภาพบิดามารดา",
+    "providentFund": "กองทุนสำรองฯ / RMF / SSF",
+    "otherDeductions": "ค่าลดหย่อนอื่นๆ",
+    "homeLoanInterest": "ดอกเบี้ยบ้าน",
+    "donations": "เงินบริจาค",
+    "max": "สูงสุด",
+    "taxToPay": "ภาษีที่ต้องจ่าย",
+    "effectiveRate": "อัตราภาษีที่แท้จริง",
+    "grossIncome": "รายได้รวม",
+    "totalDeductions": "ค่าลดหย่อนรวม",
+    "netTaxableIncome": "เงินได้สุทธิ",
+    "netIncomeAfterTax": "รายได้หลังหักภาษี",
+    "taxBreakdown": "รายละเอียดภาษีตามขั้นบันได",
+    "bracket": "ขั้นเงินได้",
+    "rate": "อัตรา",
+    "tax": "ภาษี"
   }
 }

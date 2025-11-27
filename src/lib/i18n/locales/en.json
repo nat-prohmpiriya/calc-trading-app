@@ -50,5 +50,93 @@
     "loss": "Loss",
     "risk": "Risk",
     "reward": "Reward"
+  },
+  "profitLoss": {
+    "positionType": "Position Type",
+    "long": "Long",
+    "short": "Short",
+    "profitLoss": "Profit/Loss",
+    "percent": "Percentage"
+  },
+  "fee": {
+    "tradeAmount": "Trade Amount",
+    "feePercent": "Fee Rate",
+    "leverage": "Leverage",
+    "positionSize": "Position Size",
+    "entryFee": "Entry Fee",
+    "exitFee": "Exit Fee",
+    "totalFee": "Total Fee (Round Trip)",
+    "feePercentOfCapital": "Fee % of Capital"
+  },
+  "riskReward": {
+    "stopLoss": "Stop Loss",
+    "takeProfit": "Take Profit",
+    "ratio": "Risk:Reward Ratio",
+    "breakeven": "Breakeven Win Rate"
+  },
+  "positionSize": {
+    "accountSize": "Account Size",
+    "riskPercent": "Risk Per Trade",
+    "riskAmount": "Risk Amount",
+    "slDistance": "Stop Loss Distance",
+    "recommendedSize": "Recommended Position Size",
+    "units": "units",
+    "positionValue": "Position Value"
+  },
+  "dca": {
+    "buyPrice": "Buy Price",
+    "investAmount": "Investment Amount",
+    "addEntry": "Add Entry",
+    "averagePrice": "Average Price",
+    "totalInvested": "Total Invested",
+    "totalQuantity": "Total Quantity",
+    "entries": "Number of Entries"
+  },
+  "compound": {
+    "principal": "Starting Capital",
+    "ratePerPeriod": "Rate Per Period",
+    "periods": "Number of Periods",
+    "finalAmount": "Final Amount",
+    "totalProfit": "Total Profit",
+    "totalReturn": "Total Return",
+    "breakdown": "Period Breakdown",
+    "period": "Period",
+    "amount": "Amount"
+  },
+  "taxTh": {
+    "title": "Thai Personal Income Tax Calculator",
+    "description": "Calculate personal income tax (PND 90/91) with deductions",
+    "income": "Income",
+    "annualIncome": "Annual Income (Baht)",
+    "expenseDeduction": "Expense Deduction",
+    "percent40": "40% (max 100,000)",
+    "actualExpenses": "Actual Expenses",
+    "personalDeductions": "Personal Deductions",
+    "hasSpouse": "Married",
+    "spouseHasIncome": "Spouse has income",
+    "numChildren": "Number of Children",
+    "numChildrenAfter2561": "Born after 2018",
+    "numParents": "Number of Parents",
+    "max4": "max 4",
+    "insuranceFunds": "Insurance & Funds",
+    "socialSecurity": "Social Security",
+    "lifeInsurance": "Life Insurance",
+    "healthInsurance": "Health Insurance",
+    "parentHealthInsurance": "Parent Health Insurance",
+    "providentFund": "Provident Fund / RMF / SSF",
+    "otherDeductions": "Other Deductions",
+    "homeLoanInterest": "Home Loan Interest",
+    "donations": "Donations",
+    "max": "max",
+    "taxToPay": "Tax to Pay",
+    "effectiveRate": "Effective Tax Rate",
+    "grossIncome": "Gross Income",
+    "totalDeductions": "Total Deductions",
+    "netTaxableIncome": "Net Taxable Income",
+    "netIncomeAfterTax": "Net Income After Tax",
+    "taxBreakdown": "Tax Breakdown by Bracket",
+    "bracket": "Income Bracket",
+    "rate": "Rate",
+    "tax": "Tax"
   }
 }
