@@ -1,0 +1,54 @@
+{
+  "app": {
+    "name": "CalcTrading",
+    "description": "Trading Calculator Tools"
+  },
+  "nav": {
+    "home": "Home",
+    "calculators": "Calculators",
+    "analysis": "Analysis",
+    "management": "Management"
+  },
+  "calculators": {
+    "positionSize": {
+      "title": "Position Size Calculator",
+      "description": "Calculate position size based on risk percentage"
+    },
+    "riskReward": {
+      "title": "Risk/Reward Calculator",
+      "description": "Calculate R:R ratio from entry, SL, TP"
+    },
+    "profitLoss": {
+      "title": "Profit/Loss Calculator",
+      "description": "Calculate profit or loss"
+    },
+    "compound": {
+      "title": "Compound Interest Calculator",
+      "description": "Calculate compound growth"
+    },
+    "dca": {
+      "title": "DCA Calculator",
+      "description": "Calculate dollar cost average"
+    },
+    "liquidation": {
+      "title": "Liquidation Price Calculator",
+      "description": "Calculate liquidation price"
+    },
+    "fee": {
+      "title": "Fee Calculator",
+      "description": "Calculate trading fees"
+    }
+  },
+  "common": {
+    "calculate": "Calculate",
+    "reset": "Reset",
+    "result": "Result",
+    "entry": "Entry Price",
+    "exit": "Exit Price",
+    "quantity": "Quantity",
+    "profit": "Profit",
+    "loss": "Loss",
+    "risk": "Risk",
+    "reward": "Reward"
+  }
+}

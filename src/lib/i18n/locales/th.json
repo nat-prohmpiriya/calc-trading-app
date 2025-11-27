@@ -1,0 +1,54 @@
+{
+  "app": {
+    "name": "CalcTrading",
+    "description": "เครื่องมือคำนวณสำหรับการเทรด"
+  },
+  "nav": {
+    "home": "หน้าแรก",
+    "calculators": "เครื่องคิดเลข",
+    "analysis": "วิเคราะห์",
+    "management": "จัดการ"
+  },
+  "calculators": {
+    "positionSize": {
+      "title": "คำนวณขนาด Position",
+      "description": "คำนวณขนาด position ตาม % ความเสี่ยง"
+    },
+    "riskReward": {
+      "title": "คำนวณ Risk/Reward",
+      "description": "คำนวณ R:R ratio จาก entry, SL, TP"
+    },
+    "profitLoss": {
+      "title": "คำนวณกำไร/ขาดทุน",
+      "description": "คำนวณกำไรหรือขาดทุน"
+    },
+    "compound": {
+      "title": "คำนวณดอกเบี้ยทบต้น",
+      "description": "คำนวณการเติบโตแบบทบต้น"
+    },
+    "dca": {
+      "title": "คำนวณ DCA",
+      "description": "คำนวณต้นทุนเฉลี่ย"
+    },
+    "liquidation": {
+      "title": "คำนวณราคา Liquidation",
+      "description": "คำนวณราคาที่จะถูก liquidate"
+    },
+    "fee": {
+      "title": "คำนวณค่าธรรมเนียม",
+      "description": "คำนวณค่าธรรมเนียมการเทรด"
+    }
+  },
+  "common": {
+    "calculate": "คำนวณ",
+    "reset": "รีเซ็ต",
+    "result": "ผลลัพธ์",
+    "entry": "ราคาเข้า",
+    "exit": "ราคาออก",
+    "quantity": "จำนวน",
+    "profit": "กำไร",
+    "loss": "ขาดทุน",
+    "risk": "ความเสี่ยง",
+    "reward": "ผลตอบแทน"
+  }
+}
