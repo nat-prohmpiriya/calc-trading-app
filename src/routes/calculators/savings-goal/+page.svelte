@@ -10,7 +10,33 @@
 	// Calculate mode: either time or monthly contribution
 	let calcMode = $state<'time' | 'contribution'>('time');
 
-	let result = $derived.by(() => {
+	type TimeResult = {
+		mode: 'time';
+		months: number;
+		years: number;
+		remainingMonths: number;
+		finalBalance: number;
+		totalContributed: number;
+		totalInterest: number;
+		goalAmount: number;
+	};
+
+	type ContributionResult = {
+		mode: 'contribution';
+		monthlyNeeded: number;
+		targetMonths: number;
+		targetYears: number;
+		targetRemainingMonths: number;
+		totalContributed: number;
+		totalInterest: number;
+		goalAmount: number;
+	};
+
+	type ErrorResult = { error: string };
+
+	type Result = TimeResult | ContributionResult | ErrorResult | null;
+
+	let result: Result = $derived.by(() => {
 		if (!goalAmount || goalAmount <= 0) {
 			return null;
 		}
@@ -35,7 +61,7 @@
 			}
 
 			if (months >= maxMonths) {
-				return { error: 'tooLong' };
+				return { error: 'tooLong' } as ErrorResult;
 			}
 
 			const years = Math.floor(months / 12);
@@ -52,7 +78,7 @@
 				totalContributed,
 				totalInterest,
 				goalAmount: goal
-			};
+			} as TimeResult;
 		} else {
 			// Calculate monthly contribution needed to reach goal in target time
 			if (target <= 0) return null;
@@ -85,7 +111,7 @@
 				totalContributed,
 				totalInterest: Math.max(0, totalInterest),
 				goalAmount: goal
-			};
+			} as ContributionResult;
 		}
 	});
 
@@ -137,9 +163,9 @@
 			<div class="bg-white rounded-lg shadow p-6 space-y-4">
 				<!-- Calculation Mode -->
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-2">
+					<span class="block text-sm font-medium text-gray-700 mb-2">
 						{$_('savingsGoal.calcMode')}
-					</label>
+					</span>
 					<div class="grid grid-cols-2 gap-2">
 						<button
 							class="py-2 rounded text-sm {calcMode === 'time' ? 'bg-blue-500 text-white' : 'bg-gray-200'}"

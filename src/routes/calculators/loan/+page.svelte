@@ -9,7 +9,36 @@
 
 	let totalMonths = $derived((loanTermYears ?? 0) * 12 + (loanTermMonths ?? 0));
 
-	let result = $derived.by(() => {
+	type ScheduleItem = {
+		month: number;
+		payment: number;
+		principal: number;
+		interest: number;
+		balance: number;
+	};
+
+	type EqualPaymentResult = {
+		type: 'equal';
+		monthlyPayment: number;
+		totalPayment: number;
+		totalInterest: number;
+		schedule: ScheduleItem[];
+		showEllipsis: boolean;
+	};
+
+	type ReducingPaymentResult = {
+		type: 'reducing';
+		monthlyPayment: number;
+		lastMonthPayment: number;
+		totalPayment: number;
+		totalInterest: number;
+		schedule: ScheduleItem[];
+		showEllipsis: boolean;
+	};
+
+	type LoanResult = EqualPaymentResult | ReducingPaymentResult | null;
+
+	let result: LoanResult = $derived.by(() => {
 		if (!loanAmount || loanAmount <= 0 || !interestRate || totalMonths <= 0) {
 			return null;
 		}
@@ -45,6 +74,7 @@
 			}
 
 			return {
+				type: 'equal' as const,
 				monthlyPayment,
 				totalPayment,
 				totalInterest,
@@ -79,6 +109,7 @@
 			const lastPayment = principalPayment + (principal / n) * monthlyRate;
 
 			return {
+				type: 'reducing' as const,
 				monthlyPayment: firstPayment, // First month payment
 				lastMonthPayment: lastPayment,
 				totalPayment: principal + totalInterest,
@@ -178,9 +209,9 @@
 
 				<!-- Loan Term -->
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1">
+					<span class="block text-sm font-medium text-gray-700 mb-1">
 						{$_('loan.loanTerm')}
-					</label>
+					</span>
 					<div class="grid grid-cols-2 gap-4">
 						<div>
 							<input
@@ -214,9 +245,9 @@
 
 				<!-- Payment Type -->
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-2">
+					<span class="block text-sm font-medium text-gray-700 mb-2">
 						{$_('loan.paymentType')}
-					</label>
+					</span>
 					<div class="flex gap-4">
 						<label class="flex items-center">
 							<input type="radio" bind:group={paymentType} value="equal" class="mr-2" />
@@ -249,7 +280,7 @@
 						<p class="text-4xl font-bold text-blue-600">
 							฿{result.monthlyPayment.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
 						</p>
-						{#if paymentType === 'reducing' && 'lastMonthPayment' in result}
+						{#if result.type === 'reducing'}
 							<p class="text-sm text-gray-500 mt-2">
 								{$_('loan.lastMonthPayment')}: ฿{result.lastMonthPayment.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
 							</p>
