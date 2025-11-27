@@ -13,20 +13,38 @@
 		{ min: 5000000, max: Infinity, rate: 35 }
 	];
 
-	// Deduction constants
-	const PERSONAL_DEDUCTION = 60000;
-	const SPOUSE_DEDUCTION = 60000;
-	const CHILD_DEDUCTION = 30000;
-	const CHILD_BORN_2561_DEDUCTION = 60000;
-	const PARENT_DEDUCTION = 30000;
-	const MAX_PARENT_DEDUCTIONS = 4;
-	const SOCIAL_SECURITY_MAX = 9000;
-	const LIFE_INSURANCE_MAX = 100000;
-	const HEALTH_INSURANCE_MAX = 25000;
-	const PARENT_HEALTH_INSURANCE_MAX = 15000;
-	const PROVIDENT_FUND_MAX = 500000;
-	const HOME_LOAN_INTEREST_MAX = 100000;
-	const DONATION_MAX_PERCENT = 10;
+	// Deduction limits
+	const LIMITS = {
+		personal: 60000,
+		spouse: 60000,
+		child: 30000,
+		childAfter2561: 60000,
+		parent: 30000,
+		maxParents: 4,
+		disabled: 60000,
+		maxDisabled: 4,
+		pregnancy: 60000,
+		socialSecurity: 9000,
+		lifeInsurance: 100000,
+		healthInsurance: 25000,
+		lifeHealthCombined: 100000,
+		parentHealthInsurance: 15000,
+		pensionInsurance: 200000,
+		pvd: 500000, // Provident fund
+		gpf: 500000, // Government pension fund
+		rmf: 500000, // 30% of income, max 500,000
+		ssf: 200000, // 30% of income, max 200,000
+		thaiesg: 300000,
+		nsf: 30000, // National savings fund
+		retirementCombined: 500000, // Combined cap for retirement funds
+		homeLoan: 100000,
+		socialFinanceHome: 100000,
+		easyEReceipt: 50000,
+		shopDeeMeeKuen: 40000,
+		donationGeneral: 0.1, // 10% of net income
+		donationEducation: 0.1, // 10% (but 2x deduction)
+		donationPolitical: 10000
+	};
 
 	// Income
 	let incomeType = $state<'monthly' | 'annual'>('monthly');
@@ -55,20 +73,38 @@
 	let numChildren = $state(0);
 	let numChildrenAfter2561 = $state(0);
 	let numParents = $state(0);
+	let numDisabled = $state(0);
+	let pregnancyCost = $state<number | null>(null);
 
-	// Insurance & funds
+	// Insurance
 	let socialSecurity = $state<number | null>(null);
 	let lifeInsurance = $state<number | null>(null);
 	let healthInsurance = $state<number | null>(null);
 	let parentHealthInsurance = $state<number | null>(null);
-	let providentFund = $state<number | null>(null);
+	let pensionInsurance = $state<number | null>(null);
+
+	// Retirement funds
+	let pvd = $state<number | null>(null); // Provident fund / กบข.
+	let rmf = $state<number | null>(null);
+	let ssf = $state<number | null>(null);
+	let thaiesg = $state<number | null>(null);
+	let nsf = $state<number | null>(null); // National savings fund
 
 	// Other deductions
 	let homeLoanInterest = $state<number | null>(null);
-	let donations = $state<number | null>(null);
+	let easyEReceipt = $state<number | null>(null);
+	let shopDeeMeeKuen = $state<number | null>(null);
+	let donationGeneral = $state<number | null>(null);
+	let donationEducation = $state<number | null>(null);
+	let donationPolitical = $state<number | null>(null);
+
+	// Withholding tax (ภาษีหัก ณ ที่จ่าย)
+	let withholdingTaxType = $state<'monthly' | 'annual'>('monthly');
+	let monthlyWithholdingTax = $state<number | null>(null);
+	let annualWithholdingTax = $state<number | null>(null);
 
 	let result = $derived.by(() => {
-		if (annualIncome === null || annualIncome <= 0) {
+		if (annualIncome <= 0) {
 			return null;
 		}
 
@@ -80,39 +116,79 @@
 			expenseDeduction = actualExpenses ?? 0;
 		}
 
-		// Personal deductions
-		let personalDeductions = PERSONAL_DEDUCTION;
+		// === Personal deductions ===
+		let personalDeductions = LIMITS.personal;
 
 		// Spouse deduction
 		if (hasSpouse && !spouseHasIncome) {
-			personalDeductions += SPOUSE_DEDUCTION;
+			personalDeductions += LIMITS.spouse;
 		}
 
 		// Children deduction
 		const regularChildren = Math.max(0, numChildren - numChildrenAfter2561);
-		personalDeductions += regularChildren * CHILD_DEDUCTION;
-		personalDeductions += numChildrenAfter2561 * CHILD_BORN_2561_DEDUCTION;
+		personalDeductions += regularChildren * LIMITS.child;
+		personalDeductions += numChildrenAfter2561 * LIMITS.childAfter2561;
 
 		// Parent deduction
-		personalDeductions += Math.min(numParents, MAX_PARENT_DEDUCTIONS) * PARENT_DEDUCTION;
+		personalDeductions += Math.min(numParents, LIMITS.maxParents) * LIMITS.parent;
 
-		// Insurance & fund deductions
-		const socialSecurityDeduction = Math.min(socialSecurity ?? 0, SOCIAL_SECURITY_MAX);
-		const lifeInsuranceDeduction = Math.min(lifeInsurance ?? 0, LIFE_INSURANCE_MAX);
-		const healthInsuranceDeduction = Math.min(healthInsurance ?? 0, HEALTH_INSURANCE_MAX);
-		const parentHealthInsuranceDeduction = Math.min(parentHealthInsurance ?? 0, PARENT_HEALTH_INSURANCE_MAX);
-		const providentFundDeduction = Math.min(providentFund ?? 0, PROVIDENT_FUND_MAX);
+		// Disabled/handicapped person deduction
+		personalDeductions += Math.min(numDisabled, LIMITS.maxDisabled) * LIMITS.disabled;
 
-		// Combined life + health insurance cannot exceed 100,000
+		// Pregnancy cost
+		personalDeductions += Math.min(pregnancyCost ?? 0, LIMITS.pregnancy);
+
+		// === Insurance deductions ===
+		const socialSecurityDeduction = Math.min(socialSecurity ?? 0, LIMITS.socialSecurity);
+
+		// Life + Health insurance (combined max 100,000)
+		const lifeInsuranceDeduction = Math.min(lifeInsurance ?? 0, LIMITS.lifeInsurance);
+		const healthInsuranceDeduction = Math.min(healthInsurance ?? 0, LIMITS.healthInsurance);
 		const totalLifeHealthInsurance = Math.min(
 			lifeInsuranceDeduction + healthInsuranceDeduction,
-			LIFE_INSURANCE_MAX
+			LIMITS.lifeHealthCombined
 		);
 
-		// Other deductions
-		const homeLoanDeduction = Math.min(homeLoanInterest ?? 0, HOME_LOAN_INTEREST_MAX);
+		const parentHealthInsuranceDeduction = Math.min(parentHealthInsurance ?? 0, LIMITS.parentHealthInsurance);
+		const pensionInsuranceDeduction = Math.min(pensionInsurance ?? 0, LIMITS.pensionInsurance);
 
-		// Calculate net income before donations
+		// === Retirement funds (with combined cap of 500,000) ===
+		// PVD/กบข. - max 15% of income, capped at 500,000
+		const pvdMax = Math.min(annualIncome * 0.15, LIMITS.pvd);
+		const pvdDeduction = Math.min(pvd ?? 0, pvdMax);
+
+		// RMF - max 30% of income, capped at 500,000
+		const rmfMax = Math.min(annualIncome * 0.3, LIMITS.rmf);
+		const rmfDeduction = Math.min(rmf ?? 0, rmfMax);
+
+		// SSF - max 30% of income, capped at 200,000
+		const ssfMax = Math.min(annualIncome * 0.3, LIMITS.ssf);
+		const ssfDeduction = Math.min(ssf ?? 0, ssfMax);
+
+		// THAIESG - max 300,000
+		const thaiesgDeduction = Math.min(thaiesg ?? 0, LIMITS.thaiesg);
+
+		// NSF - max 30,000
+		const nsfDeduction = Math.min(nsf ?? 0, LIMITS.nsf);
+
+		// Combined retirement cap (PVD + RMF + SSF + pensionInsurance + NSF) max 500,000
+		// Note: THAIESG is separate, not included in this cap
+		const retirementFundsTotal = pvdDeduction + rmfDeduction + ssfDeduction + pensionInsuranceDeduction + nsfDeduction;
+		const retirementFundsCapped = Math.min(retirementFundsTotal, LIMITS.retirementCombined);
+
+		// === Other deductions ===
+		const homeLoanDeduction = Math.min(homeLoanInterest ?? 0, LIMITS.homeLoan);
+		const easyEReceiptDeduction = Math.min(easyEReceipt ?? 0, LIMITS.easyEReceipt);
+		const shopDeeMeeKuenDeduction = Math.min(shopDeeMeeKuen ?? 0, LIMITS.shopDeeMeeKuen);
+
+		// Political donation (max 10,000)
+		const politicalDonationDeduction = Math.min(donationPolitical ?? 0, LIMITS.donationPolitical);
+
+		// Education donation (2x deduction, max 10% of income after deductions)
+		const educationDonationActual = donationEducation ?? 0;
+		const educationDonation2x = educationDonationActual * 2;
+
+		// Calculate net income before general donations
 		const netIncomeBeforeDonations =
 			annualIncome -
 			expenseDeduction -
@@ -120,15 +196,24 @@
 			socialSecurityDeduction -
 			totalLifeHealthInsurance -
 			parentHealthInsuranceDeduction -
-			providentFundDeduction -
-			homeLoanDeduction;
+			retirementFundsCapped -
+			thaiesgDeduction -
+			homeLoanDeduction -
+			easyEReceiptDeduction -
+			shopDeeMeeKuenDeduction -
+			politicalDonationDeduction;
 
-		// Donation deduction (max 10% of net income)
-		const maxDonation = Math.max(0, netIncomeBeforeDonations * (DONATION_MAX_PERCENT / 100));
-		const donationDeduction = Math.min(donations ?? 0, maxDonation);
+		// Education donation cap (10% of net income before donations)
+		const educationDonationMax = Math.max(0, netIncomeBeforeDonations * LIMITS.donationEducation);
+		const educationDonationDeduction = Math.min(educationDonation2x, educationDonationMax);
+
+		// General donation cap (10% of net income after education donation)
+		const netAfterEducationDonation = netIncomeBeforeDonations - educationDonationDeduction;
+		const generalDonationMax = Math.max(0, netAfterEducationDonation * LIMITS.donationGeneral);
+		const generalDonationDeduction = Math.min(donationGeneral ?? 0, generalDonationMax);
 
 		// Net taxable income
-		const netTaxableIncome = Math.max(0, netIncomeBeforeDonations - donationDeduction);
+		const netTaxableIncome = Math.max(0, netAfterEducationDonation - generalDonationDeduction);
 
 		// Calculate tax
 		let totalTax = 0;
@@ -138,10 +223,7 @@
 		for (const bracket of TAX_BRACKETS) {
 			if (remainingIncome <= 0) break;
 
-			const taxableInBracket = Math.min(
-				remainingIncome,
-				bracket.max - bracket.min
-			);
+			const taxableInBracket = Math.min(remainingIncome, bracket.max - bracket.min);
 
 			if (taxableInBracket > 0) {
 				const taxInBracket = (taxableInBracket * bracket.rate) / 100;
@@ -162,6 +244,19 @@
 
 		const effectiveTaxRate = annualIncome > 0 ? (totalTax / annualIncome) * 100 : 0;
 
+		// Calculate withholding tax paid
+		let withholdingTaxPaid = 0;
+		if (withholdingTaxType === 'monthly') {
+			withholdingTaxPaid = (monthlyWithholdingTax ?? 0) * 12;
+		} else {
+			withholdingTaxPaid = annualWithholdingTax ?? 0;
+		}
+
+		// Tax refund or additional tax to pay
+		const taxDifference = totalTax - withholdingTaxPaid;
+		const isRefund = taxDifference < 0;
+		const taxRefundOrPay = Math.abs(taxDifference);
+
 		// Total deductions summary
 		const totalDeductions =
 			expenseDeduction +
@@ -169,22 +264,33 @@
 			socialSecurityDeduction +
 			totalLifeHealthInsurance +
 			parentHealthInsuranceDeduction +
-			providentFundDeduction +
+			retirementFundsCapped +
+			thaiesgDeduction +
 			homeLoanDeduction +
-			donationDeduction;
+			easyEReceiptDeduction +
+			shopDeeMeeKuenDeduction +
+			politicalDonationDeduction +
+			educationDonationDeduction +
+			generalDonationDeduction;
 
 		return {
 			grossIncome: annualIncome,
 			expenseDeduction,
 			personalDeductions,
-			insuranceDeductions: socialSecurityDeduction + totalLifeHealthInsurance + parentHealthInsuranceDeduction + providentFundDeduction,
-			otherDeductions: homeLoanDeduction + donationDeduction,
+			insuranceDeductions: socialSecurityDeduction + totalLifeHealthInsurance + parentHealthInsuranceDeduction,
+			retirementDeductions: retirementFundsCapped + thaiesgDeduction,
+			otherDeductions: homeLoanDeduction + easyEReceiptDeduction + shopDeeMeeKuenDeduction + politicalDonationDeduction + educationDonationDeduction + generalDonationDeduction,
 			totalDeductions,
 			netTaxableIncome,
 			totalTax,
 			effectiveTaxRate,
 			taxBreakdown,
-			netIncomeAfterTax: annualIncome - totalTax
+			netIncomeAfterTax: annualIncome - totalTax,
+			monthlyTax: totalTax / 12,
+			monthlyNetIncome: (annualIncome - totalTax) / 12,
+			withholdingTaxPaid,
+			isRefund,
+			taxRefundOrPay
 		};
 	});
 
@@ -201,13 +307,27 @@
 		numChildren = 0;
 		numChildrenAfter2561 = 0;
 		numParents = 0;
+		numDisabled = 0;
+		pregnancyCost = null;
 		socialSecurity = null;
 		lifeInsurance = null;
 		healthInsurance = null;
 		parentHealthInsurance = null;
-		providentFund = null;
+		pensionInsurance = null;
+		pvd = null;
+		rmf = null;
+		ssf = null;
+		thaiesg = null;
+		nsf = null;
 		homeLoanInterest = null;
-		donations = null;
+		easyEReceipt = null;
+		shopDeeMeeKuen = null;
+		donationGeneral = null;
+		donationEducation = null;
+		donationPolitical = null;
+		withholdingTaxType = 'monthly';
+		monthlyWithholdingTax = null;
+		annualWithholdingTax = null;
 	}
 
 	function switchLocale(lang: string) {
@@ -309,7 +429,6 @@
 										class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
 									/>
 								</div>
-								<!-- Show calculated annual income -->
 								{#if annualIncome > 0}
 									<div class="p-3 bg-blue-50 rounded-lg text-center">
 										<span class="text-sm text-gray-600">{$_('taxTh.calculatedAnnual')}:</span>
@@ -376,7 +495,7 @@
 					<div class="space-y-4">
 						<label class="flex items-center">
 							<input type="checkbox" bind:checked={hasSpouse} class="mr-2" />
-							{$_('taxTh.hasSpouse')}
+							{$_('taxTh.hasSpouse')} (60,000)
 						</label>
 
 						{#if hasSpouse}
@@ -388,10 +507,11 @@
 
 						<div class="grid grid-cols-2 gap-4">
 							<div>
-								<label class="block text-sm font-medium text-gray-700 mb-1">
-									{$_('taxTh.numChildren')}
+								<label for="numChildren" class="block text-sm font-medium text-gray-700 mb-1">
+									{$_('taxTh.numChildren')} (30,000)
 								</label>
 								<input
+									id="numChildren"
 									type="number"
 									bind:value={numChildren}
 									min="0"
@@ -399,10 +519,11 @@
 								/>
 							</div>
 							<div>
-								<label class="block text-sm font-medium text-gray-700 mb-1">
-									{$_('taxTh.numChildrenAfter2561')}
+								<label for="numChildrenAfter2561" class="block text-sm font-medium text-gray-700 mb-1">
+									{$_('taxTh.numChildrenAfter2561')} (60,000)
 								</label>
 								<input
+									id="numChildrenAfter2561"
 									type="number"
 									bind:value={numChildrenAfter2561}
 									min="0"
@@ -412,31 +533,61 @@
 							</div>
 						</div>
 
+						<div class="grid grid-cols-2 gap-4">
+							<div>
+								<label for="numParents" class="block text-sm font-medium text-gray-700 mb-1">
+									{$_('taxTh.numParents')} (30,000/{$_('taxTh.person')})
+								</label>
+								<input
+									id="numParents"
+									type="number"
+									bind:value={numParents}
+									min="0"
+									max="4"
+									class="w-full px-4 py-2 border rounded-lg"
+								/>
+							</div>
+							<div>
+								<label for="numDisabled" class="block text-sm font-medium text-gray-700 mb-1">
+									{$_('taxTh.numDisabled')} (60,000/{$_('taxTh.person')})
+								</label>
+								<input
+									id="numDisabled"
+									type="number"
+									bind:value={numDisabled}
+									min="0"
+									max="4"
+									class="w-full px-4 py-2 border rounded-lg"
+								/>
+							</div>
+						</div>
+
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1">
-								{$_('taxTh.numParents')} ({$_('taxTh.max4')})
+							<label for="pregnancyCost" class="block text-sm font-medium text-gray-700 mb-1">
+								{$_('taxTh.pregnancyCost')} ({$_('taxTh.max')} 60,000)
 							</label>
 							<input
+								id="pregnancyCost"
 								type="number"
-								bind:value={numParents}
-								min="0"
-								max="4"
+								bind:value={pregnancyCost}
+								placeholder="0"
 								class="w-full px-4 py-2 border rounded-lg"
 							/>
 						</div>
 					</div>
 				</div>
 
-				<!-- Insurance & Funds Section -->
+				<!-- Insurance Section -->
 				<div class="bg-white rounded-lg shadow p-6">
-					<h2 class="text-lg font-semibold mb-4">{$_('taxTh.insuranceFunds')}</h2>
+					<h2 class="text-lg font-semibold mb-4">{$_('taxTh.insurance')}</h2>
 
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1">
+							<label for="socialSecurity" class="block text-sm font-medium text-gray-700 mb-1">
 								{$_('taxTh.socialSecurity')} ({$_('taxTh.max')} 9,000)
 							</label>
 							<input
+								id="socialSecurity"
 								type="number"
 								bind:value={socialSecurity}
 								placeholder="0"
@@ -444,10 +595,11 @@
 							/>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1">
+							<label for="lifeInsurance" class="block text-sm font-medium text-gray-700 mb-1">
 								{$_('taxTh.lifeInsurance')} ({$_('taxTh.max')} 100,000)
 							</label>
 							<input
+								id="lifeInsurance"
 								type="number"
 								bind:value={lifeInsurance}
 								placeholder="0"
@@ -455,10 +607,11 @@
 							/>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1">
+							<label for="healthInsurance" class="block text-sm font-medium text-gray-700 mb-1">
 								{$_('taxTh.healthInsurance')} ({$_('taxTh.max')} 25,000)
 							</label>
 							<input
+								id="healthInsurance"
 								type="number"
 								bind:value={healthInsurance}
 								placeholder="0"
@@ -466,10 +619,11 @@
 							/>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1">
+							<label for="parentHealthInsurance" class="block text-sm font-medium text-gray-700 mb-1">
 								{$_('taxTh.parentHealthInsurance')} ({$_('taxTh.max')} 15,000)
 							</label>
 							<input
+								id="parentHealthInsurance"
 								type="number"
 								bind:value={parentHealthInsurance}
 								placeholder="0"
@@ -477,17 +631,88 @@
 							/>
 						</div>
 						<div class="md:col-span-2">
-							<label class="block text-sm font-medium text-gray-700 mb-1">
-								{$_('taxTh.providentFund')} ({$_('taxTh.max')} 500,000)
+							<label for="pensionInsurance" class="block text-sm font-medium text-gray-700 mb-1">
+								{$_('taxTh.pensionInsurance')} ({$_('taxTh.max')} 200,000)
 							</label>
 							<input
+								id="pensionInsurance"
 								type="number"
-								bind:value={providentFund}
+								bind:value={pensionInsurance}
 								placeholder="0"
 								class="w-full px-4 py-2 border rounded-lg"
 							/>
 						</div>
 					</div>
+					<p class="text-xs text-gray-500 mt-2">* {$_('taxTh.lifeHealthNote')}</p>
+				</div>
+
+				<!-- Retirement Funds Section -->
+				<div class="bg-white rounded-lg shadow p-6">
+					<h2 class="text-lg font-semibold mb-4">{$_('taxTh.retirementFunds')}</h2>
+
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div>
+							<label for="pvd" class="block text-sm font-medium text-gray-700 mb-1">
+								{$_('taxTh.pvd')} ({$_('taxTh.max')} 15%)
+							</label>
+							<input
+								id="pvd"
+								type="number"
+								bind:value={pvd}
+								placeholder="0"
+								class="w-full px-4 py-2 border rounded-lg"
+							/>
+						</div>
+						<div>
+							<label for="rmf" class="block text-sm font-medium text-gray-700 mb-1">
+								RMF ({$_('taxTh.max')} 30%)
+							</label>
+							<input
+								id="rmf"
+								type="number"
+								bind:value={rmf}
+								placeholder="0"
+								class="w-full px-4 py-2 border rounded-lg"
+							/>
+						</div>
+						<div>
+							<label for="ssf" class="block text-sm font-medium text-gray-700 mb-1">
+								SSF ({$_('taxTh.max')} 200,000)
+							</label>
+							<input
+								id="ssf"
+								type="number"
+								bind:value={ssf}
+								placeholder="0"
+								class="w-full px-4 py-2 border rounded-lg"
+							/>
+						</div>
+						<div>
+							<label for="thaiesg" class="block text-sm font-medium text-gray-700 mb-1">
+								THAIESG ({$_('taxTh.max')} 300,000)
+							</label>
+							<input
+								id="thaiesg"
+								type="number"
+								bind:value={thaiesg}
+								placeholder="0"
+								class="w-full px-4 py-2 border rounded-lg"
+							/>
+						</div>
+						<div class="md:col-span-2">
+							<label for="nsf" class="block text-sm font-medium text-gray-700 mb-1">
+								{$_('taxTh.nsf')} ({$_('taxTh.max')} 30,000)
+							</label>
+							<input
+								id="nsf"
+								type="number"
+								bind:value={nsf}
+								placeholder="0"
+								class="w-full px-4 py-2 border rounded-lg"
+							/>
+						</div>
+					</div>
+					<p class="text-xs text-gray-500 mt-2">* {$_('taxTh.retirementNote')}</p>
 				</div>
 
 				<!-- Other Deductions Section -->
@@ -496,10 +721,11 @@
 
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1">
+							<label for="homeLoanInterest" class="block text-sm font-medium text-gray-700 mb-1">
 								{$_('taxTh.homeLoanInterest')} ({$_('taxTh.max')} 100,000)
 							</label>
 							<input
+								id="homeLoanInterest"
 								type="number"
 								bind:value={homeLoanInterest}
 								placeholder="0"
@@ -507,17 +733,122 @@
 							/>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1">
-								{$_('taxTh.donations')} ({$_('taxTh.max')} 10%)
+							<label for="easyEReceipt" class="block text-sm font-medium text-gray-700 mb-1">
+								Easy E-Receipt ({$_('taxTh.max')} 50,000)
 							</label>
 							<input
+								id="easyEReceipt"
 								type="number"
-								bind:value={donations}
+								bind:value={easyEReceipt}
+								placeholder="0"
+								class="w-full px-4 py-2 border rounded-lg"
+							/>
+						</div>
+						<div>
+							<label for="shopDeeMeeKuen" class="block text-sm font-medium text-gray-700 mb-1">
+								{$_('taxTh.shopDeeMeeKuen')} ({$_('taxTh.max')} 40,000)
+							</label>
+							<input
+								id="shopDeeMeeKuen"
+								type="number"
+								bind:value={shopDeeMeeKuen}
+								placeholder="0"
+								class="w-full px-4 py-2 border rounded-lg"
+							/>
+						</div>
+						<div>
+							<label for="donationPolitical" class="block text-sm font-medium text-gray-700 mb-1">
+								{$_('taxTh.donationPolitical')} ({$_('taxTh.max')} 10,000)
+							</label>
+							<input
+								id="donationPolitical"
+								type="number"
+								bind:value={donationPolitical}
+								placeholder="0"
+								class="w-full px-4 py-2 border rounded-lg"
+							/>
+						</div>
+						<div>
+							<label for="donationEducation" class="block text-sm font-medium text-gray-700 mb-1">
+								{$_('taxTh.donationEducation')} (2x, {$_('taxTh.max')} 10%)
+							</label>
+							<input
+								id="donationEducation"
+								type="number"
+								bind:value={donationEducation}
+								placeholder="0"
+								class="w-full px-4 py-2 border rounded-lg"
+							/>
+						</div>
+						<div>
+							<label for="donationGeneral" class="block text-sm font-medium text-gray-700 mb-1">
+								{$_('taxTh.donationGeneral')} ({$_('taxTh.max')} 10%)
+							</label>
+							<input
+								id="donationGeneral"
+								type="number"
+								bind:value={donationGeneral}
 								placeholder="0"
 								class="w-full px-4 py-2 border rounded-lg"
 							/>
 						</div>
 					</div>
+				</div>
+
+				<!-- Withholding Tax Section -->
+				<div class="bg-white rounded-lg shadow p-6">
+					<h2 class="text-lg font-semibold mb-4">{$_('taxTh.withholdingTax')}</h2>
+
+					<!-- Withholding Tax Type Toggle -->
+					<div class="flex gap-2 mb-4">
+						<button
+							class="flex-1 py-2 rounded {withholdingTaxType === 'monthly' ? 'bg-blue-500 text-white' : 'bg-gray-200'}"
+							onclick={() => (withholdingTaxType = 'monthly')}
+						>
+							{$_('taxTh.monthly')}
+						</button>
+						<button
+							class="flex-1 py-2 rounded {withholdingTaxType === 'annual' ? 'bg-blue-500 text-white' : 'bg-gray-200'}"
+							onclick={() => (withholdingTaxType = 'annual')}
+						>
+							{$_('taxTh.annual')}
+						</button>
+					</div>
+
+					{#if withholdingTaxType === 'monthly'}
+						<div>
+							<label for="monthlyWithholdingTax" class="block text-sm font-medium text-gray-700 mb-1">
+								{$_('taxTh.monthlyWithholdingTax')}
+							</label>
+							<input
+								id="monthlyWithholdingTax"
+								type="number"
+								bind:value={monthlyWithholdingTax}
+								placeholder="0"
+								step="100"
+								class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+							/>
+							{#if monthlyWithholdingTax && monthlyWithholdingTax > 0}
+								<p class="text-sm text-gray-500 mt-1">
+									{$_('taxTh.annualWithholdingTax')}: ฿{(monthlyWithholdingTax * 12).toLocaleString()}
+								</p>
+							{/if}
+						</div>
+					{:else}
+						<div>
+							<label for="annualWithholdingTax" class="block text-sm font-medium text-gray-700 mb-1">
+								{$_('taxTh.annualWithholdingTax')}
+							</label>
+							<input
+								id="annualWithholdingTax"
+								type="number"
+								bind:value={annualWithholdingTax}
+								placeholder="0"
+								step="1000"
+								class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+							/>
+						</div>
+					{/if}
 				</div>
 
 				<!-- Reset Button -->
@@ -543,7 +874,27 @@
 						<p class="text-sm text-gray-500 mt-1">
 							{$_('taxTh.effectiveRate')}: {result.effectiveTaxRate.toFixed(2)}%
 						</p>
+						<div class="mt-2 pt-2 border-t border-blue-200">
+							<p class="text-sm text-gray-600">
+								{$_('taxTh.monthlyTax')}: <span class="font-semibold">฿{result.monthlyTax.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
+							</p>
+						</div>
 					</div>
+
+					<!-- Tax Refund / Additional Payment -->
+					{#if result.withholdingTaxPaid > 0}
+						<div class="text-center mb-6 p-4 rounded-lg {result.isRefund ? 'bg-green-50' : 'bg-red-50'}">
+							<p class="text-sm text-gray-500 mb-1">
+								{$_('taxTh.withholdingTaxPaid')}: ฿{result.withholdingTaxPaid.toLocaleString()}
+							</p>
+							<p class="text-3xl font-bold {result.isRefund ? 'text-green-600' : 'text-red-600'}">
+								{result.isRefund ? '+' : '-'}฿{result.taxRefundOrPay.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
+							</p>
+							<p class="text-sm font-medium {result.isRefund ? 'text-green-600' : 'text-red-600'} mt-1">
+								{result.isRefund ? $_('taxTh.taxRefund') : $_('taxTh.additionalTax')}
+							</p>
+						</div>
+					{/if}
 
 					<div class="space-y-3 text-sm">
 						<div class="flex justify-between">
@@ -563,6 +914,10 @@
 						<div class="flex justify-between font-semibold text-green-600">
 							<span>{$_('taxTh.netIncomeAfterTax')}:</span>
 							<span>฿{result.netIncomeAfterTax.toLocaleString()}</span>
+						</div>
+						<div class="flex justify-between text-green-600">
+							<span>{$_('taxTh.monthlyNetIncome')}:</span>
+							<span>฿{result.monthlyNetIncome.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
 						</div>
 					</div>
 
